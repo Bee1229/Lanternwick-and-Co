@@ -1,39 +1,24 @@
-BEGIN;
-
-DROP TABLE IF EXISTS staging.stg_abs_store_inventory_and_sale_items;
-
-CREATE TABLE staging.stg_abs_store_inventory_and_sale_items (
-    code            TEXT PRIMARY KEY,
-    category        TEXT,
-    description     TEXT,
-    size            TEXT,
-    total_inventory NUMERIC(12,2),
-    price           NUMERIC(10,2),
-    sale_price      NUMERIC(10,2),
-    sale_end_date   DATE,
-    on_sales        BOOLEAN,
-    stock_status    TEXT
+CREATE TABLE staging.stg_lanternwick_and_co(
+    invoiceno TEXT NOT NULL,
+    stockcode TEXT NOT NULL,
+    description TEXT,
+    quantity INTEGER,
+    invoicedate DATE,
+    unitprice NUMERIC,
+    customerid TEXT,
+    country TEXT,
+    linetotal NUMERIC
 );
 
-INSERT INTO staging.stg_abs_store_inventory_and_sale_items
-    (code, category, description, size, total_inventory,
-     price, sale_price, sale_end_date, on_sales, stock_status)
+INSERT INTO staging.stg_lanternwick_and_co
 SELECT
-    code,
-    category,
+    invoiceno,
+    stockcode,
     description,
-    size,
-    total_inventory,
-    price,
-    sale_price,
-    sale_end_date::DATE,
-    on_sales,
-    CASE
-        WHEN total_inventory = 0   THEN 'Zero'
-        WHEN total_inventory < 100 THEN 'Low'
-        ELSE 'Healthy'
-    END
-FROM raw.abs_store_inventory_and_sale_items;
-
-COMMIT;
-
+    quantity,
+    invoicedate::DATE,
+    unitprice,
+    TRIM(TRAILING '.0' FROM customerid),
+    country,
+    ROUND(linetotal,2)
+FROM raw.lanternwick_and_co;
